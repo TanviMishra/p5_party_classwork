@@ -1,0 +1,49 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: jeff-script;
+  display: inline;
+  overflow-y: hidden;
+}
+:root {
+  --silver: #c4cedb;
+  --grey: #262732;
+  --black: #221f20;
+}
+canvas {
+  position: absolute;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 150px;
+}
+button {
+  background-color: var(--silver);
+}
+#instruct {
+  position: absolute;
+  top: 0;
+}
+#header {
+  background-color: var(--grey);
+  color: var(--silver);
+  width: 100vw;
+  height: 60px;
+}
+#content {
+  background-color: var(--silver);
+  color: var(--silver);
+  background-image: url("/assets/background_test.svg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  padding: 5px 0;
+}
+
+h1 {
+  margin: 0 auto;
+  width: fit-content;
+}
