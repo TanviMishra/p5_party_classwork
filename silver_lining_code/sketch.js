@@ -3,24 +3,29 @@ let silver = "#c4cedb"; let grey =  "#262732"; let black =  "#000"; //colours
 let selected;
 distCheck = false;
 lineDist = 80;
+let localLost = false;
 function preload() {
   partyConnect("wss://deepstream-server-1.herokuapp.com", "tm_silver_lining_ver2.0", "main");
   shared = partyLoadShared("shared");
   me = partyLoadMyShared();
   participants = partyLoadParticipantShareds();
+  yay = loadImage("./assets/won_ver2.0.svg");
+  dead = loadImage("./assets/dead_ver2.0.svg");
+  
 }
 function setup() {
   createCanvas(500, 500);
   if (partyIsHost) {
-    shared.screenMode = 2;
+    shared.screenMode = 0;
     shared.array = [];
     shared.lost = false;
     shared.turn = 0;
     shared.resetDraw = [];
   }
   me.canTurn=true;
-  me.gamesLost=0; //not implemented yet
+  me.localLost=false;
   me.width=1;
+  partyToggleInfo(false);
   buttonPresets();
 }
 function draw() {
@@ -89,7 +94,13 @@ function winScreen(){
   menu.position(windowWidth/2-50, 600);
 }
 function loseScreen(){
-  background("red");
+  //background("red");
+  if(shared.lost==true && localLost==true){
+    image(dead, 0, 0, width, height)
+  }
+  else if(shared.lost==true && localLost==false){
+    image(yay, 0, 0, width, height)
+  }
   //button position 
   instruct.hide(); game.hide(); menu.show();
   menu.position(windowWidth/2-50, 600);
@@ -100,7 +111,6 @@ function mousePressed() {
   if (shared.screenMode == 2) {
     turnBased();
   }
-  lost();
 }
 function turnBased() {
   if (shared.turn < participants.length && me.canTurn==true) {
@@ -192,7 +202,9 @@ function lineIntersect(checkPointArr) {
         );
       } else {
         console.log("intersects!");
-        shared.lost=true
+        shared.lost=true;
+        localLost=true;
+        lost();
       }
     }
   }
@@ -216,9 +228,7 @@ function lineIntersectCalc(a, b, c, d, p, q, r, s) {
   return check;
 }
 function lost() {
-  if(shared.lost==true){
-    shared.screenMode=4;
-  }
+  shared.screenMode=4;
 }
 //GAME MECHANIC ENDS HERE
 // changeScene0->4 all change shared screen object
