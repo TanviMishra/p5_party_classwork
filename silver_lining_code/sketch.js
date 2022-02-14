@@ -1,5 +1,5 @@
 let instruct; let game; //buttons
-let silver = "#c4cedb"; let grey =  "#262732"; let black =  "#000"; //colours
+let silver = "#c4cedb"; let grey =  "#262732"; let black =  "#000"; let red ="#db3832"//colours
 let selected;
 distCheck = false;
 lineDist = 80;
@@ -9,8 +9,8 @@ function preload() {
   shared = partyLoadShared("shared");
   me = partyLoadMyShared();
   participants = partyLoadParticipantShareds();
-  yay = loadImage("./assets/won_ver2.0.svg");
-  dead = loadImage("./assets/dead_ver2.0.svg");
+  yay = loadImage("./assets/won_ver2.0.png");
+  dead = loadImage("./assets/dead_ver2.0.png");
   
 }
 function setup() {
@@ -21,10 +21,12 @@ function setup() {
     shared.lost = false;
     shared.turn = 0;
     shared.resetDraw = [];
+    shared.message="hello";
   }
   me.canTurn=true;
   me.localLost=false;
   me.width=1;
+  me.message=""
   partyToggleInfo(false);
   buttonPresets();
 }
@@ -40,7 +42,7 @@ function draw() {
       gameScreen();
       break;
     case 3:
-      winScreen();   
+      winScreen();   //not implemented
       break;
     case 4:
       loseScreen();   
@@ -66,22 +68,31 @@ function instructionScreen(){
   game.position(windowWidth/2-50, 600);
   //rule set
   fill(silver); textFont('jeff-script');
-  textSize(24); 
+  textSize(30); 
   text("Instructions", 50,50)
   textSize(18);
-  text("Draw Lines, that's pretty much it", 50,90)
+  text("Draw lines, that's pretty much it", 50,90);
+  text("Oh, wait...", 50,120)
+  text("Your lines need to be longer than 80px", 50,150)
+  text("And, your lines can't intersect any other lines", 50,180)
+  text("Make sure your opponent (and not you)", 90,250)
+  fill(red);
+  text("Crosses a line", 300,350);
 }
 function gameScreen(){
   if(me.canTurn==true){
     background(black);
+    me.message="your turn";
   }
   else{
     background(100);
+    me.message="waiting for round to end";
   }
   //button position 
   instruct.hide(); game.hide(); menu.show();
-  menu.position(windowWidth/2-50, 600);
+  menu.position(500, 600);
   //game mechanics implementation
+  printMessage();
   drawLine(shared.array);
   if(shared.array.length>1 && me.canTurn==true){
    planLine(shared.array); 
@@ -127,26 +138,42 @@ function turnBased() {
       p.canTurn = true;
     }
     console.log("round ended, click again to draw line");
+    shared.message="round ended, click again to draw line";
     shared.turn=0;
   }
+}
+function printMessage(){
+  push();
+  fill(silver);
+  strokeWeight(0);
+  if(shared.message!=""){
+    text(shared.message, 50, 50);
+  }
+  if(me.message!=""){
+    text(me.message, 50, 80);
+  }
+  pop();
 }
 function drawOnCanvas(){
   let canvasBoundaryCheck = canvasBoundary()
   if(canvasBoundaryCheck== true){
     distCheck = distanceCheck(shared.array);
-    if (shared.array.length < 1) {
+    if (shared.array.length < 2) {
       shared.array.push({ x: mouseX, y: mouseY });
       fill("white");
-      rect(10, 10, 10, 10);
+      ellipse(shared.array[1].x, shared.array[1].x, 3, 3);
       console.log("line started");
+      shared.message="Line started";
     } 
     else if (distCheck == true) {
       shared.array.push({ x: mouseX, y: mouseY });
       console.log("line continue");
+      shared.message="Line Continues";
       // pointIntersect(mouseX, mouseY, shared.array);
       lineIntersect(shared.array);
     } 
     else console.log("draw a longer line"); 
+    shared.message="Draw a longer line";
   }
 }
 function canvasBoundary(){
@@ -169,7 +196,7 @@ function distanceCheck() {
 function drawLine(lineArr) {
   stroke(255);
   strokeWeight(me.width);
-  for (i = 0; i < lineArr.length - 1; i++) {
+  for (i = 1; i < lineArr.length - 1; i++) {
     j = i + 1;
     line(lineArr[i].x, lineArr[i].y, lineArr[j].x, lineArr[j].y);
   }
@@ -186,7 +213,7 @@ function lineIntersect(checkPointArr) {
   let check2 = totLen - 1;
   intersectCheck = false;
   if (check2 > 2) {
-    for (let i = 0; i < totLen - 1; i++) {
+    for (let i = 1; i < totLen - 1; i++) {
       if (intersectCheck == false) {
         j = i + 1;
         let check1 = check2 - 1;
