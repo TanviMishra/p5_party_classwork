@@ -144,18 +144,18 @@ function turnBased() {
     // shared.round=true;
   }
 }
-// function printMessage(c=silver, y=50, x=50){
-//   push();
-//   fill(c);
-//   strokeWeight(0);
-//   if(shared.message!=""){
-//     text(shared.message, x+300, y);
-//   }
-//   if(me.message!=""){
-//     text(me.message, x, y);
-//   }
-//   pop();
-// }
+function printMessage(c=silver, y=50, x=50){
+  push();
+  fill(c);
+  strokeWeight(0);
+  // if(shared.message!=""){
+  //   text(shared.message, x+300, y);
+  // }
+  // if(me.message!=""){
+  //   text(me.message, x, y);
+  // }
+  pop();
+}
 function drawOnCanvas(){
   let canvasBoundaryCheck = canvasBoundary()
   if(canvasBoundaryCheck== true){
