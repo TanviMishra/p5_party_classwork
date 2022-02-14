@@ -1,16 +1,13 @@
 let instruct; let game; //buttons
-let silver = "#c4cedb";
-let grey = "#262732";
-let black = "#000";
+let silver = "#c4cedb"; let grey =  "#262732"; let black =  "#000"; //colours
 let selected;
 distCheck = false;
 lineDist = 80;
 function preload() {
-  partyConnect(
-    "wss://deepstream-server-1.herokuapp.com", "tm_silver_lining_1",
-    "main"
-  );
+  partyConnect("wss://deepstream-server-1.herokuapp.com", "tm_silver_lining_ver2.0", "main");
   shared = partyLoadShared("shared");
+  me = partyLoadMyShared();
+  participants = partyLoadParticipantShareds();
 }
 function setup() {
   createCanvas(500, 500);
@@ -18,7 +15,12 @@ function setup() {
     shared.screenMode = 2;
     shared.array = [];
     shared.lost = false;
+    shared.turn = 0;
+    shared.resetDraw = [];
   }
+  me.canTurn=true;
+  me.gamesLost=0; //not implemented yet
+  me.width=1;
   buttonPresets();
 }
 function draw() {
@@ -33,14 +35,14 @@ function draw() {
       gameScreen();
       break;
     case 3:
-      winScreen();
+      winScreen();   
       break;
     case 4:
-      loseScreen();
+      loseScreen();   
       break;
   }
 }
-function introScreen() {
+function introScreen(){
   background(black);
   //resetting shared values
   shared.screenMode = 0;
@@ -49,59 +51,101 @@ function introScreen() {
   //button position 
   rectMode(CENTER)
   instruct.show(); game.show(); menu.hide();
-  instruct.position(windowWidth / 2 - 50, windowHeight / 2 - 100);
-  game.position(windowWidth / 2 - 50, windowHeight / 2);
+  instruct.position(windowWidth/2-50, windowHeight/2-100);
+  game.position(windowWidth/2-50, windowHeight/2);
 }
-function instructionScreen() {
+function instructionScreen(){
   background(black);
   //button position 
   instruct.hide(); game.show(); menu.hide();
-  game.position(windowWidth / 2 - 50, 600);
+  game.position(windowWidth/2-50, 600);
   //rule set
   fill(silver); textFont('jeff-script');
-  textSize(24);
-  text("Instructions", 50, 50)
+  textSize(24); 
+  text("Instructions", 50,50)
   textSize(18);
-  text("Draw Lines, that's pretty much it", 50, 90)
+  text("Draw Lines, that's pretty much it", 50,90)
 }
-function gameScreen() {
-  background(black);
+function gameScreen(){
+  if(me.canTurn==true){
+    background(black);
+  }
+  else{
+    background(100);
+  }
   //button position 
   instruct.hide(); game.hide(); menu.show();
-  menu.position(windowWidth / 2 - 50, 600);
+  menu.position(windowWidth/2-50, 600);
   //game mechanics implementation
   drawLine(shared.array);
+  if(shared.array.length>1 && me.canTurn==true){
+   planLine(shared.array); 
+  } 
 }
-function winScreen() {
+function winScreen(){
   background("green");
   //button position 
   instruct.hide(); game.hide(); menu.show();
-  menu.position(windowWidth / 2 - 50, 600);
+  menu.position(windowWidth/2-50, 600);
 }
-function loseScreen() {
+function loseScreen(){
   background("red");
   //button position 
   instruct.hide(); game.hide(); menu.show();
-  menu.position(windowWidth / 2 - 50, 600);
+  menu.position(windowWidth/2-50, 600);
 }
 
 //GAME MECHANIC STARTS HERE
 function mousePressed() {
   if (shared.screenMode == 2) {
-    distCheck = distanceCheck(shared.array);
-    if (shared.array.length < 1) {
-      shared.array.push({ x: mouseX, y: mouseY });
-      console.log("line started")
-    } else if (distCheck == true) {
-      shared.array.push({ x: mouseX, y: mouseY });
-      console.log("line continue")
-      // pointIntersect(mouseX, mouseY, shared.array);
-      lineIntersect(shared.array);
-    } else console.log("draw a longer line");
+    turnBased();
   }
   lost();
 }
-
+function turnBased() {
+  if (shared.turn < participants.length && me.canTurn==true) {
+    drawOnCanvas();
+    shared.resetDraw[shared.turn]=false;
+    me.canTurn=false;
+    shared.turn++;
+  }
+  else if(shared.turn == participants.length){
+    for(i=0;i<shared.resetDraw.length;i++){
+      shared.resetDraw[i]=true;
+    }
+    for (const p of participants) {
+      p.canTurn = true;
+    }
+    console.log("round ended, click again to draw line");
+    shared.turn=0;
+  }
+}
+function drawOnCanvas(){
+  let canvasBoundaryCheck = canvasBoundary()
+  if(canvasBoundaryCheck== true){
+    distCheck = distanceCheck(shared.array);
+    if (shared.array.length < 1) {
+      shared.array.push({ x: mouseX, y: mouseY });
+      fill("white");
+      rect(10, 10, 10, 10);
+      console.log("line started");
+    } 
+    else if (distCheck == true) {
+      shared.array.push({ x: mouseX, y: mouseY });
+      console.log("line continue");
+      // pointIntersect(mouseX, mouseY, shared.array);
+      lineIntersect(shared.array);
+    } 
+    else console.log("draw a longer line"); 
+  }
+}
+function canvasBoundary(){
+  if(mouseX<width && mouseX>0 && mouseY<height && mouseY>0){
+    return true;
+  }
+  else
+    console.log("you're trying to click outside the border, you lose a turn")
+}
 function distanceCheck() {
   len = shared.array.length;
   if (len > 0) {
@@ -114,10 +158,18 @@ function distanceCheck() {
 }
 function drawLine(lineArr) {
   stroke(255);
+  strokeWeight(me.width);
   for (i = 0; i < lineArr.length - 1; i++) {
     j = i + 1;
     line(lineArr[i].x, lineArr[i].y, lineArr[j].x, lineArr[j].y);
   }
+}
+function planLine(lineArr){
+  stroke(150);
+  strokeWeight(me.width);
+  endPoint=lineArr.length - 1;
+  console.log(lineArr,endPoint)
+  line(lineArr[endPoint].x, lineArr[endPoint].y, mouseX, mouseY)
 }
 function lineIntersect(checkPointArr) {
   let totLen = checkPointArr.length;
@@ -140,7 +192,7 @@ function lineIntersect(checkPointArr) {
         );
       } else {
         console.log("intersects!");
-        shared.lost = true
+        shared.lost=true
       }
     }
   }
@@ -163,24 +215,29 @@ function lineIntersectCalc(a, b, c, d, p, q, r, s) {
   }
   return check;
 }
+function lost() {
+  if(shared.lost==true){
+    shared.screenMode=4;
+  }
+}
 //GAME MECHANIC ENDS HERE
 // changeScene0->4 all change shared screen object
-function changeScene0() {
-  shared.screenMode = 0;
+function changeScene0(){
+  shared.screenMode=0;
 }
-function changeScene1() {
-  shared.screenMode = 1;
+function changeScene1(){
+  shared.screenMode=1;
 }
-function changeScene2() {
-  shared.screenMode = 2;
+function changeScene2(){
+  shared.screenMode=2;
 }
-function changeScene3() {
-  shared.screenMode = 3;
+function changeScene3(){
+  shared.screenMode=3;
 }
-function changeScene4() {
-  shared.screenMode = 4;
+function changeScene4(){
+  shared.screenMode=4;
 }
-function buttonPresets() {
+function buttonPresets(){
   instruct = createButton('Instructions');
   instruct.style('border', 'none');
   instruct.style('background-color', grey);
@@ -204,9 +261,4 @@ function buttonPresets() {
   menu.style('padding', '5px 10px');
   menu.style('font-family', 'jeff-script');
   menu.mousePressed(changeScene0);
-}
-function lost() {
-  if (shared.lost == true) {
-    shared.screenMode = 4;
-  }
 }
