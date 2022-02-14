@@ -5,7 +5,7 @@ distCheck = false;
 lineDist = 80;
 let localLost = false;
 function preload() {
-  partyConnect("wss://deepstream-server-1.herokuapp.com", "tm_silver_lining_ver2.0", "main");
+  partyConnect("wss://deepstream-server-1.herokuapp.com", "tm_silver_lining_ver3.0", "main");
   shared = partyLoadShared("shared");
   me = partyLoadMyShared();
   participants = partyLoadParticipantShareds();
@@ -22,6 +22,7 @@ function setup() {
     shared.turn = 0;
     shared.resetDraw = [];
     shared.message="hello";
+    // shared.round="";
   }
   me.canTurn=true;
   me.localLost=false;
@@ -82,17 +83,17 @@ function instructionScreen(){
 function gameScreen(){
   if(me.canTurn==true){
     background(black);
-    me.message="your turn";
+    me.message="YOUR TURN";
   }
   else{
-    background(100);
-    me.message="waiting for round to end";
+    background(20);
+    me.message="OPPONENT'S TURN";
   }
   //button position 
   instruct.hide(); game.hide(); menu.show();
   menu.position(500, 600);
   //game mechanics implementation
-  printMessage();
+  //printMessage();
   drawLine(shared.array);
   if(shared.array.length>1 && me.canTurn==true){
    planLine(shared.array); 
@@ -129,6 +130,7 @@ function turnBased() {
     shared.resetDraw[shared.turn]=false;
     me.canTurn=false;
     shared.turn++;
+    // shared.round=false;
   }
   else if(shared.turn == participants.length){
     for(i=0;i<shared.resetDraw.length;i++){
@@ -138,30 +140,30 @@ function turnBased() {
       p.canTurn = true;
     }
     console.log("round ended, click again to draw line");
-    shared.message="round ended, click again to draw line";
     shared.turn=0;
+    // shared.round=true;
   }
 }
-function printMessage(){
-  push();
-  fill(silver);
-  strokeWeight(0);
-  if(shared.message!=""){
-    text(shared.message, 50, 50);
-  }
-  if(me.message!=""){
-    text(me.message, 50, 80);
-  }
-  pop();
-}
+// function printMessage(c=silver, y=50, x=50){
+//   push();
+//   fill(c);
+//   strokeWeight(0);
+//   if(shared.message!=""){
+//     text(shared.message, x+300, y);
+//   }
+//   if(me.message!=""){
+//     text(me.message, x, y);
+//   }
+//   pop();
+// }
 function drawOnCanvas(){
   let canvasBoundaryCheck = canvasBoundary()
   if(canvasBoundaryCheck== true){
     distCheck = distanceCheck(shared.array);
-    if (shared.array.length < 2) {
+    if (shared.array.length < 1) {
       shared.array.push({ x: mouseX, y: mouseY });
-      fill("white");
-      ellipse(shared.array[1].x, shared.array[1].x, 3, 3);
+      //fill("white");
+      //ellipse(shared.array[1].x, shared.array[1].y, 3, 3);
       console.log("line started");
       shared.message="Line started";
     } 
@@ -172,8 +174,10 @@ function drawOnCanvas(){
       // pointIntersect(mouseX, mouseY, shared.array);
       lineIntersect(shared.array);
     } 
-    else console.log("draw a longer line"); 
-    shared.message="Draw a longer line";
+    else{ 
+      console.log("draw a longer line"); 
+      shared.message="Draw a longer line";
+    }
   }
 }
 function canvasBoundary(){
@@ -196,7 +200,7 @@ function distanceCheck() {
 function drawLine(lineArr) {
   stroke(255);
   strokeWeight(me.width);
-  for (i = 1; i < lineArr.length - 1; i++) {
+  for (i = 0; i < lineArr.length - 1; i++) {
     j = i + 1;
     line(lineArr[i].x, lineArr[i].y, lineArr[j].x, lineArr[j].y);
   }
