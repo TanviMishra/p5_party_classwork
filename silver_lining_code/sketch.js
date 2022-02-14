@@ -23,11 +23,11 @@ function setup() {
     shared.resetDraw = [];
     shared.message="hello";
     // shared.round="";
+    me.canTurn=true;
+    me.localLost=false;
+    me.width=1;
+    me.message=""
   }
-  me.canTurn=true;
-  me.localLost=false;
-  me.width=1;
-  me.message=""
   partyToggleInfo(false);
   buttonPresets();
 }
@@ -85,7 +85,7 @@ function gameScreen(){
     background(black);
     me.message="YOUR TURN";
   }
-  else{
+  else if (me.canTurn==false){
     background(20);
     me.message="OPPONENT'S TURN";
   }
@@ -93,7 +93,7 @@ function gameScreen(){
   instruct.hide(); game.hide(); menu.show();
   menu.position(500, 600);
   //game mechanics implementation
-  //printMessage();
+  printMessage();
   drawLine(shared.array);
   if(shared.array.length>1 && me.canTurn==true){
    planLine(shared.array); 
@@ -148,12 +148,12 @@ function printMessage(c=silver, y=50, x=50){
   push();
   fill(c);
   strokeWeight(0);
-  // if(shared.message!=""){
-  //   text(shared.message, x+300, y);
-  // }
-  // if(me.message!=""){
-  //   text(me.message, x, y);
-  // }
+  if(shared.message!=""){
+    text(shared.message, x+300, y);
+  }
+  if(me.message!=""){
+    text(me.message, x, y);
+  }
   pop();
 }
 function drawOnCanvas(){
@@ -217,7 +217,7 @@ function lineIntersect(checkPointArr) {
   let check2 = totLen - 1;
   intersectCheck = false;
   if (check2 > 2) {
-    for (let i = 1; i < totLen - 1; i++) {
+    for (let i = 0; i < totLen - 1; i++) {
       if (intersectCheck == false) {
         j = i + 1;
         let check1 = check2 - 1;
